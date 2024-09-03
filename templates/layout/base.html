@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Attendance System using Facial Recognition - {{ page_data["title"] }}</title>
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='dist/img/favicon.ico') }}" type="image/x-icon">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='plugins/fontawesome-free/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='plugins/sweetalert2/css/sweetalert2.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='plugins/datatables/css/dataTables.bootstrap4.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/adminlte.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/fonts.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/main.min.css') }}">
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/main.css') }}"> -->
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed {{ 'dark-mode' if session['mode'] == 'dark' else 'null' }}">
+    <div class="wrapper">
+        <div class="preloader flex-column justify-content-center align-items-center">
+            <img class="animation__wobble" src="{{ url_for('static', filename='dist/img/logo.png') }}" alt="ESSU Logo" height="60" width="60">
+            <span>ESSU Can-Avid</span>
+        </div>
+
+        <nav class="main-header navbar navbar-expand {{ 'navbar-dark' if session['mode'] == 'dark' else 'navbar-light' }}">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link" data-toggle="dropdown" href="javascript:void(0)">
+                        <i class="fas fa-cog"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a href="javascript:void(0)" class="dropdown-item" id="account_settings">
+                            <i class="fas fa-user mr-2"></i> Account Settings
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="javascript:void(0)" class="dropdown-item" id="mode">
+                            <i class="fas fa-{{ 'sun' if session['mode'] == 'dark' else 'moon' }} mr-2"></i> {{ 'Light Mode' if session['mode'] == 'dark' else 'Dark Mode' }}
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="javascript:void(0)" class="dropdown-item logout">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+
+        <aside class="main-sidebar sidebar-{{ 'dark' if session['mode'] == 'dark' else 'light' }}-success elevation-4">
+            <a href="/" class="brand-link">
+                <img src="{{ url_for('static', filename='dist/img/logo.png')}}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+                <span class="brand-text font-weight-light">Attendance System</span>
+            </a>
+
+            <div class="sidebar">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="{{ url_for('static', filename='dist/img/uploads/admin/' + admin_data['image'])}}" class="img-circle elevation-2" alt="User Image">
+                    </div>
+                    <div class="info">
+                        <span class="d-block text-truncate">{{ admin_data["name"] }}</span>
+                    </div>
+                </div>
+
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="/take_attendance" class="nav-link {{ 'active' if page_data['current_page'] == 'take_attendance' else null }}">
+                                <i class="nav-icon fas fa-clock"></i>
+                                <p>Take Attendance</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/students_record" class="nav-link {{ 'active' if page_data['current_page'] == 'students_record' else null }}">
+                                <i class="nav-icon fas fa-graduation-cap"></i>
+                                <p>Students Record</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/attendance_record" class="nav-link {{ 'active' if page_data['current_page'] == 'attendance_record' else null }}">
+                                <i class="nav-icon fas fa-calendar-alt"></i>
+                                <p>Attendance Record</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="javascript:void(0)" class="nav-link logout">
+                                <i class="nav-icon fas fa-sign-out-alt"></i>
+                                <p>Logout</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        {% block content %}
+        <!-- content goes here -->
+        {% endblock %}
+
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2024 <a href="/">Attendance System using Facial Recognition</a>.</strong>
+            All rights reserved.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Version</b> 1.0.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- Account Settings Modal -->
+    <div class="modal fade" id="account_settings_modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="overlay loading">
+                    <i class="fas fa-2x fa-sync fa-spin"></i>
+                </div>
+                <div class="modal-header">
+                    <h5 class="modal-title">Account Settings</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="javascript:void(0)" id="account_settings_form">
+                    <div class="modal-body">
+                        <div class="text-center mb-3">
+                            <img id="account_settings_image_display" src="{{ url_for('static', filename='dist/img/uploads/admin/default-user-image.png') }}" class="rounded-circle" alt="User Image" style="width: 100px; height: 100px;">
+                        </div>
+                        <div class="form-group text-center">
+                            <label for="account_settings_image">Upload Image</label>
+                            <input type="file" class="form-control-file" id="account_settings_image" accept="image/*">
+                        </div>
+                        <div class="form-group">
+                            <label for="account_settings_name" class="required">Name</label>
+                            <input type="text" class="form-control" id="account_settings_name" placeholder="Enter your name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="account_settings_username" class="required">Username</label>
+                            <input type="text" class="form-control" id="account_settings_username" placeholder="Enter your username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="account_settings_password">New Password</label>
+                            <input type="password" class="form-control" id="account_settings_password" placeholder="Password hidden for security purposes">
+                            <small class="text-danger d-none" id="error_account_settings_password">Passwords do not match</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="account_settings_confirm_password">Confirm Password</label>
+                            <input type="password" class="form-control" id="account_settings_confirm_password" placeholder="Password hidden for security purposes">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" id="account_settings_old_password">
+                        <input type="hidden" id="account_settings_old_image">
+
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success" id="account_settings_submit">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Student Modal -->
+    <div class="modal fade" id="new_student_modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="overlay d-none loading">
+                    <i class="fas fa-2x fa-sync fa-spin"></i>
+                </div>
+                <div class="modal-header">
+                    <h5 class="modal-title">New Student</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="javascript:void(0)" id="new_student_form">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="new_student_student_number" class="required">Student Number</label>
+                                    <input type="text" class="form-control" id="new_student_student_number" required>
+                                    <small class="text-danger d-none" id="error_new_student_student_number">Student Number is already in use</small>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="new_student_course" class="required">Course</label>
+                                    <select id="new_student_course" class="custom-select" required>
+                                        <option value selected disabled></option>
+                                        <option value="BSIT">Bachelor of Science in Information Technology</option>
+                                        <option value="BSA">Bachelor of Science in Agriculture</option>
+                                        <option value="BEED">Bachelor of Elementary Education</option>
+                                        <option value="BSED">Bachelor of Secondary Education</option>
+                                        <option value="BSCrim">Bachelor of Science in Criminology</option>
+                                        <option value="BSA">Bachelor of Science in Business Administration</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <label for="new_student_year" class="required">Year</label>
+                                    <select id="new_student_year" class="custom-select" required>
+                                        <option value selected disabled></option>
+                                        <option value="1st">1st</option>
+                                        <option value="2nd">2nd</option>
+                                        <option value="3rd">3rd</option>
+                                        <option value="4th">4th</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <label for="new_student_section" class="required">Section</label>
+                                    <input type="text" class="form-control" id="new_student_section" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="new_student_first_name" class="required">First Name</label>
+                                    <input type="text" class="form-control" id="new_student_first_name" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="new_student_middle_name">Middle Name</label>
+                                    <input type="text" class="form-control" id="new_student_middle_name" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="new_student_last_name" class="required">Last Name</label>
+                                    <input type="text" class="form-control" id="new_student_last_name" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="new_student_date_of_birth" class="required">Date of Birth</label>
+                                    <input type="date" class="form-control" id="new_student_date_of_birth" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="new_student_gender" class="required">Gender</label>
+                                    <select id="new_student_gender" class="custom-select" required>
+                                        <option value disabled selected></option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="new_student_nationality" class="required">Nationality</label>
+                                    <select id="new_student_nationality" class="custom-select" required>
+                                        <option value disabled selected></option>
+                                        <option value="Argentine">Argentine</option>
+                                        <option value="Australian">Australian</option>
+                                        <option value="Brazilian">Brazilian</option>
+                                        <option value="British">British</option>
+                                        <option value="Canadian">Canadian</option>
+                                        <option value="Chinese">Chinese</option>
+                                        <option value="Egyptian">Egyptian</option>
+                                        <option value="Filipino">Filipino</option>
+                                        <option value="French">French</option>
+                                        <option value="German">German</option>
+                                        <option value="Indian">Indian</option>
+                                        <option value="Indonesian">Indonesian</option>
+                                        <option value="Italian">Italian</option>
+                                        <option value="Japanese">Japanese</option>
+                                        <option value="Mexican">Mexican</option>
+                                        <option value="Nigerian">Nigerian</option>
+                                        <option value="Russian">Russian</option>
+                                        <option value="South African">South African</option>
+                                        <option value="Spanish">Spanish</option>
+                                        <option value="American">American</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="new_student_mobile_number" class="required">Mobile Number</label>
+                                    <input type="text" class="form-control" id="new_student_mobile_number" data-inputmask='"mask": "9999 999 9999"' data-mask required>
+                                    <small class="text-danger d-none">Invalid mobile number</small>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="new_student_email_address" class="required">Email Address</label>
+                                    <input type="email" class="form-control" id="new_student_email_address" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label for="new_student_address" class="required">Address</label>
+                                    <textarea id="new_student_address" class="form-control" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group mb-2">
+                                    <label class="required">Capture Image</label>
+                                    <div id="camera_preview" class="camera-preview"></div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <button type="button" class="btn btn-primary w-100" id="camera_start_stop">Start Camera</button>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <button type="button" class="btn btn-success w-100" id="capture_image" disabled>Capture</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="new_student_image" class="required">Captured Image</label>
+                                    <img id="captured_image_preview" class="w-100 mb-2" style="height: 250px;" alt="Captured Image Preview" src="{{ url_for('static', filename='dist/img/white-background.png') }}">
+                                    <input type="text" class="form-control" id="new_student_image" readonly>
+                                    <small class="text-danger d-none" id="error_new_student_image">You need to upload an image</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success" id="new_student_submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Student Modal -->
+    <div class="modal fade" id="update_student_modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="overlay d-none loading">
+                    <i class="fas fa-2x fa-sync fa-spin"></i>
+                </div>
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Student</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="javascript:void(0)" id="update_student_form">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="update_student_student_number" class="required">Student Number</label>
+                                    <input type="text" class="form-control" id="update_student_student_number" required>
+                                    <small class="text-danger d-none" id="error_update_student_student_number">Student Number is already in use</small>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="update_student_course" class="required">Course</label>
+                                    <select id="update_student_course" class="custom-select" required>
+                                        <option value="BSIT">Bachelor of Science in Information Technology</option>
+                                        <option value="BSA">Bachelor of Science in Agriculture</option>
+                                        <option value="BEED">Bachelor of Elementary Education</option>
+                                        <option value="BSED">Bachelor of Secondary Education</option>
+                                        <option value="BSCrim">Bachelor of Science in Criminology</option>
+                                        <option value="BSA">Bachelor of Science in Business Administration</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <label for="update_student_year" class="required">Year</label>
+                                    <select id="update_student_year" class="custom-select" required>
+                                        <option value="1st">1st</option>
+                                        <option value="2nd">2nd</option>
+                                        <option value="3rd">3rd</option>
+                                        <option value="4th">4th</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <label for="update_student_section" class="required">Section</label>
+                                    <input type="text" class="form-control" id="update_student_section" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="update_student_first_name" class="required">First Name</label>
+                                    <input type="text" class="form-control" id="update_student_first_name" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="update_student_middle_name">Middle Name</label>
+                                    <input type="text" class="form-control" id="update_student_middle_name" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="update_student_last_name" class="required">Last Name</label>
+                                    <input type="text" class="form-control" id="update_student_last_name" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="update_student_date_of_birth" class="required">Date of Birth</label>
+                                    <input type="date" class="form-control" id="update_student_date_of_birth" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="update_student_gender" class="required">Gender</label>
+                                    <select id="update_student_gender" class="custom-select" required>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group">
+                                    <label for="update_student_nationality" class="required">Nationality</label>
+                                    <select id="update_student_nationality" class="custom-select" required>
+                                        <option value="Argentine">Argentine</option>
+                                        <option value="Australian">Australian</option>
+                                        <option value="Brazilian">Brazilian</option>
+                                        <option value="British">British</option>
+                                        <option value="Canadian">Canadian</option>
+                                        <option value="Chinese">Chinese</option>
+                                        <option value="Egyptian">Egyptian</option>
+                                        <option value="Filipino">Filipino</option>
+                                        <option value="French">French</option>
+                                        <option value="German">German</option>
+                                        <option value="Indian">Indian</option>
+                                        <option value="Indonesian">Indonesian</option>
+                                        <option value="Italian">Italian</option>
+                                        <option value="Japanese">Japanese</option>
+                                        <option value="Mexican">Mexican</option>
+                                        <option value="Nigerian">Nigerian</option>
+                                        <option value="Russian">Russian</option>
+                                        <option value="South African">South African</option>
+                                        <option value="Spanish">Spanish</option>
+                                        <option value="American">American</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="update_student_mobile_number" class="required">Mobile Number</label>
+                                    <input type="text" class="form-control" id="update_student_mobile_number" data-inputmask='"mask": "9999 999 9999"' data-mask required>
+                                    <small class="text-danger d-none">Invalid mobile number</small>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="update_student_email_address" class="required">Email Address</label>
+                                    <input type="email" class="form-control" id="update_student_email_address" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label for="update_student_address" class="required">Address</label>
+                                    <textarea id="update_student_address" class="form-control" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group mb-2">
+                                    <label class="required">Capture Image</label>
+                                    <div id="update_camera_preview" class="camera-preview"></div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <button type="button" class="btn btn-primary w-100" id="update_camera_start_stop">Start Camera</button>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <button type="button" class="btn btn-success w-100" id="update_capture_image" disabled>Capture</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="update_student_image" class="required">Captured Image</label>
+                                    <img id="update_captured_image_preview" class="w-100 mb-2" style="height: 250px;" alt="Captured Image Preview" src="{{ url_for('static', filename='dist/img/white-background.png') }}">
+                                    <input type="text" class="form-control" id="update_student_image" readonly>
+                                    <small class="text-danger d-none" id="error_update_student_image">You need to upload an image</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" id="update_student_id">
+                        <input type="hidden" id="update_student_old_student_number">
+                        <input type="hidden" id="update_student_old_image">
+
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success" id="update_student_submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Attendance Modal -->
+    <div class="modal fade" id="new_attendance_modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="overlay loading">
+                    <i class="fas fa-2x fa-sync fa-spin"></i>
+                </div>
+                <div class="modal-header">
+                    <h5 class="modal-title">New Attendance</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="new_attendance_form" action="javascript:void(0)">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group mb-2">
+                                    <label>Image Preview</label>
+                                    <div id="new_attendance_camera" class="camera-preview w-100 text-center"></div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <button type="button" class="btn btn-primary w-100" id="new_attendance_start_stop_camera">Start Camera</button>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <button type="button" class="btn btn-success w-100" id="new_attendance_capture" disabled>Capture</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="update_student_image">Captured Image</label>
+                                    <img id="new_attendance_image_preview" class="w-100 mb-2" style="height: 250px;" alt="Captured Image Preview" src="{{ url_for('static', filename='dist/img/white-background.png') }}">
+                                    <input type="text" class="form-control" id="new_attendance_image" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="new_attendance_result" class="d-none">
+                            <hr>
+                            <h1 class="text-center mb-4">Face Query Results</h1>
+                            <div class="row d-none" id="actual_results">
+                                <div class="col-lg-4">
+                                    <img id="new_attendance_random_image" class="img-thumbnail" style="width: 250px; height: 250px; background-color: white;">
+                                </div>
+                                <div class="col-lg-8">
+                                    <div class="form-group">
+                                        <label for="new_attendance_student_number">Student Number</label>
+                                        <input type="text" class="form-control" id="new_attendance_student_number" value="17-00136" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="new_attendance_full_name">Full Name</label>
+                                        <input type="text" class="form-control" id="new_attendance_full_name" value="Mark Chito R. Anteja" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="new_attendance_course_year_section">Course, Year and Section</label>
+                                        <input type="text" class="form-control" id="new_attendance_course_year_section" value="BSIT 3-A" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" id="waiting_result">
+                                <div class="col-lg-12 d-flex align-items-center justify-content-center py-5">
+                                    <h2 class="text-muted" id="waiting_message">Selecting match from the database...</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" id="new_attendance_student_image">
+
+                        <button type="button" class="btn btn-default" data-dismiss="modal" id="btn_cancel">Cancel</button>
+                        <button type="submit" class="btn btn-success d-none" id="new_attendance_confirm">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var user_id = "{{ session['user_id'] }}";
+        var mode = "{{ session['mode'] if 'mode' in session else null }}";
+        var notification = "{{ session['notification'] if 'notification' in session else null }}";
+    </script>
+
+    <script src="{{ url_for('static', filename='plugins/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='plugins/sweetalert2/js/sweetalert2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='plugins/datatables/js/dataTables.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='plugins/datatables/js/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='plugins/inputmask/inputmask.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='plugins/webcam/webcam.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='dist/js/adminlte.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='dist/js/main.min.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='dist/js/main.js') }}"></script> -->
+
+    <div class="d-none">
+        {% if "notification" in session %}
+        {{ session.pop("notification", None) }}
+        {% endif %}
+        
+        {% if "student_attendance_result" in session %}
+        {{ session.pop("student_attendance_result", None) }}
+        {% endif %}
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Attendance System using Facial Recognition - Login</title>
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='dist/img/favicon.ico') }}" type="image/x-icon">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='plugins/fontawesome-free/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/adminlte.min.css') }}">
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/login.css') }}"> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/login.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/fonts.min.css') }}">
+</head>
+
+<body class="hold-transition login-page">
+    <div id="particles-js"></div>
+
+    <div class="login-box">
+        <div class="alert alert-danger text-center d-none" id="login_notification">Invalid Username or Password</div>
+
+        {% if "notification" in session %}
+        <div class="alert {{ session['notification']['type'] }} text-center" id="notification">{{ session['notification']['message'] }}</div>
+        {% endif %}
+
+        <div class="card">
+            <div class="text-center pt-3">
+                <img src="{{ url_for('static', filename='dist/img/logo.png') }}" alt="ESSU Logo" width="100">
+            </div>
+            <div class="card-header text-center">
+                <h1><b>Attendance System</b></h1>
+                <span>(Using Facial Recognition)</span>
+            </div>
+            <div class="card-body">
+                <p class="login-box-msg">Sign in to continue</p>
+
+                <form action="javascript:void(0)" id="login_form">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="login_username" placeholder="Username" value="{{ session['username'] }}" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-user"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-2">
+                        <input type="password" class="form-control" id="login_password" placeholder="Password" value="{{ session['password'] }}" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="icheck-success mb-3">
+                        <input type="checkbox" id="login_remember_me">
+                        <label for="login_remember_me">
+                            Remember Me
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-block" id="login_submit">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-none">
+        {% if "notification" in session %}
+        {{ session.pop("notification", None) }}
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='plugins/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='dist/js/adminlte.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='dist/js/particles.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='dist/js/login.min.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='dist/js/login.js') }}"></script> -->
+</body>
+
+</html>

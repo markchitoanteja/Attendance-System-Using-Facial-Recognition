@@ -1,0 +1,51 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12">
+                    <h1 class="m-0">{{ page_data["title"] }}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    <section class="content">
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-body">
+                    <table id="example" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Student Number</th>
+                                <th>Date</th>
+                                <th>Time In</th>
+                                <th>Time Out</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attendance in attendance_data %}
+                            <tr>
+                                <td>{{ attendance.student_number }}</td>
+                                <td>{{ datetime.strptime(attendance.date, '%Y-%m-%d').strftime('%B %d, %Y') }}</td>
+                                <td>{{ attendance.time_in }}</td>
+                                <td>{{ attendance.time_out }}</td>
+                                <td class="{% if attendance.time_out %}text-danger{% else %}text-success{% endif %} text-center">
+                                    {% if attendance.time_out %}
+                                    OUT
+                                    {% else %}
+                                    IN
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
