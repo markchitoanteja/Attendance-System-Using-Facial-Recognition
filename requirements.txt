@@ -1,0 +1,9 @@
+opencv-python
+numpy
+pandas
+dlib
+face-recognition
+Flask
+Flask-SQLAlchemy
+Flask-WTF
+gunicorn
